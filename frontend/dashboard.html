@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SEAM Assessment – Consultant Dashboard for diagnostic analysis">
+    <title>SEAM Dashboard – Consultant Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
+<script src="/js/theme.js"></script>
+
+<!-- ═══════════ Login Screen ═══════════ -->
+<div class="login-container" id="loginScreen">
+    <div class="login-card glass-card">
+        <div class="welcome-icon">🔐</div>
+        <h1 class="welcome-title">Consultant Portal</h1>
+        <p class="welcome-description">Enter your consultant password to access the diagnostic dashboard.</p>
+        <form id="loginForm" class="welcome-form" style="text-align:left;">
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" class="input-field" placeholder="Enter password" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">Sign In</button>
+            <p id="loginError" style="color:var(--accent-rose); font-size:0.85rem; display:none; text-align:center;"></p>
+        </form>
+    </div>
+</div>
+
+<!-- ═══════════ Dashboard ═══════════ -->
+<div class="dashboard" id="dashboardScreen" style="display:none;">
+
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div class="chat-header-brand">
+            <div class="chat-header-logo">S</div>
+            <div>
+                <div class="chat-header-title">SEAM Dashboard</div>
+                <div class="chat-header-subtitle">Organizational Diagnosis</div>
+            </div>
+        </div>
+        <div style="display:flex; gap:0.5rem; align-items:center; padding-right: 3.5rem;">
+            <a href="/interview.html" class="btn btn-secondary btn-sm" target="_blank">Open Interview</a>
+            <button class="btn btn-ghost btn-sm" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="dashboard-content">
+
+        <!-- Stats Grid -->
+        <div class="dashboard-grid" id="statsGrid">
+            <div class="glass-card stat-card">
+                <div class="stat-label">Total Sessions</div>
+                <div class="stat-value" id="statTotal">–</div>
+            </div>
+            <div class="glass-card stat-card">
+                <div class="stat-label">Completed</div>
+                <div class="stat-value" id="statCompleted">–</div>
+            </div>
+            <div class="glass-card stat-card">
+                <div class="stat-label">Field Notes</div>
+                <div class="stat-value" id="statNotes">–</div>
+            </div>
+        </div>
+
+        <!-- Category Distribution -->
+        <div class="dashboard-section">
+            <div class="dashboard-section-header">
+                <h2 class="dashboard-section-title">Dysfunction Distribution</h2>
+            </div>
+            <div class="glass-card" style="padding:var(--space-lg);">
+                <div class="category-bars" id="categoryBars">
+                    <div class="loading-center"><div class="spinner"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sessions Table -->
+        <div class="dashboard-section">
+            <div class="dashboard-section-header">
+                <h2 class="dashboard-section-title">Interview Sessions</h2>
+                <div style="display:flex; gap:0.5rem;">
+                    <select class="input-field" id="filterStatus" style="width:auto; padding:0.4rem 2rem 0.4rem 0.75rem; font-size:0.8rem;">
+                        <option value="">All Status</option>
+                        <option value="completed">Completed</option>
+                        <option value="active">Active</option>
+                    </select>
+                    <button class="btn btn-secondary btn-sm" id="refreshBtn">↻ Refresh</button>
+                </div>
+            </div>
+            <div class="glass-card" style="overflow-x:auto;">
+                <table class="data-table" id="sessionsTable">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Department</th>
+                            <th>Level</th>
+                            <th>Status</th>
+                            <th>Messages</th>
+                            <th>Notes</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sessionsBody">
+                        <tr><td colspan="8" class="loading-center"><div class="spinner"></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Clusters -->
+        <div class="dashboard-section">
+            <div class="dashboard-section-header">
+                <h2 class="dashboard-section-title">Dysfunction Clusters</h2>
+                <button class="btn btn-secondary btn-sm" id="runClusterBtn">Run Clustering</button>
+            </div>
+            <div class="cluster-grid" id="clustersGrid">
+                <div class="empty-state">
+                    <div class="empty-state-icon">🔍</div>
+                    <p class="empty-state-text">Click "Run Clustering" to group similar field notes</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Tags -->
+        <div class="dashboard-section">
+            <div class="dashboard-section-header">
+                <h2 class="dashboard-section-title">Top Thematic Tags</h2>
+            </div>
+            <div class="glass-card" style="padding:var(--space-lg);">
+                <div id="tagsContainer" style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+                    <div class="loading-center"><div class="spinner"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════ Session Detail Modal ═══════════ -->
+<div class="modal-overlay" id="sessionModal">
+    <div class="modal glass-card">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modalTitle">Session Detail</h3>
+            <button class="btn btn-ghost btn-icon" id="modalClose" style="font-size:1.25rem;">✕</button>
+        </div>
+        <div id="modalContent">
+            <div class="loading-center"><div class="spinner"></div></div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/dashboard.js"></script>
+</body>
+</html>

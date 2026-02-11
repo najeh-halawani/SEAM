@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SEAM Organizational Assessment – Confidential diagnostic interview chatbot">
+    <title>SEAM Assessment Interview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
+<script src="/js/theme.js"></script>
+
+<!-- ═══════════ Welcome / Setup Screen ═══════════ -->
+<div class="welcome-overlay" id="welcomeOverlay">
+    <div class="welcome-card glass-card">
+        <div class="welcome-icon">🏢</div>
+        <h1 class="welcome-title">SEAM Assessment</h1>
+        <p class="welcome-description">
+            Welcome to the SEAM Organizational Diagnosis Interview. Your responses are
+            <strong>confidential and anonymous</strong>. There are no right or wrong answers —
+            we're interested in your honest experiences and perceptions.
+        </p>
+
+        <form class="welcome-form" id="welcomeForm">
+            <div class="form-group">
+                <label for="department">Department</label>
+                <input type="text" id="department" class="input-field"
+                       placeholder="e.g. Operations, HR, Finance">
+            </div>
+
+            <div class="form-group">
+                <label for="roleLevel">Role Level</label>
+                <select id="roleLevel" class="input-field">
+                    <option value="">— Select —</option>
+                    <option value="operational">Operational</option>
+                    <option value="teacher">Teacher</option>
+                    <option value="coordinator">Coordinator</option>
+                    <option value="managerial">Managerial</option>
+                    <option value="executive">Executive</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="languagePref">Preferred Language</label>
+                <select id="languagePref" class="input-field">
+                    <option value="auto">Auto-detect</option>
+                    <option value="en">English</option>
+                    <option value="ar">العربية (Arabic)</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg" style="width:100%; margin-top: 0.5rem;">
+                Begin Interview
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ═══════════ Chat Interface ═══════════ -->
+<div class="chat-container" id="chatContainer" style="display:none;">
+
+    <!-- Header -->
+    <div class="chat-header">
+        <div class="chat-header-brand">
+            <div class="chat-header-logo">S</div>
+            <div>
+                <div class="chat-header-title">SEAM Assessment</div>
+                <div class="chat-header-subtitle" id="categoryLabel">Starting interview...</div>
+            </div>
+        </div>
+        <div style="display:flex; gap:0.5rem;">
+            <button class="btn btn-ghost btn-sm" id="endInterviewBtn" title="End interview early">
+                End Interview
+            </button>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="chat-messages" id="chatMessages"></div>
+
+    <!-- Input Area -->
+    <div class="chat-input-area">
+        <div class="chat-progress" id="progressSection">
+            <span id="progressLabel">Category 1/6</span>
+            <div class="chat-progress-bar">
+                <div class="chat-progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+        </div>
+        <div class="chat-input-row">
+            <textarea class="chat-input" id="chatInput"
+                      placeholder="Type your response..."
+                      rows="1"
+                      maxlength="5000"></textarea>
+            <button class="chat-send-btn" id="sendBtn" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════ Interview Complete Overlay ═══════════ -->
+<div class="welcome-overlay hidden" id="completeOverlay">
+    <div class="welcome-card glass-card">
+        <div class="welcome-icon">✅</div>
+        <h1 class="welcome-title">Interview Complete</h1>
+        <p class="welcome-description">
+            Thank you for your participation. Your responses have been recorded
+            securely and will contribute to the organizational diagnosis.
+        </p>
+        <div id="completionStats" style="margin-bottom: 1.5rem;"></div>
+        <button class="btn btn-primary btn-lg" onclick="location.reload()" style="width:100%;">
+            Start New Session
+        </button>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="/js/api.js"></script>
+<script src="/js/interview.js"></script>
+</body>
+</html>

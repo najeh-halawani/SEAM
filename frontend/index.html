@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SEAM Assessment – AI-Augmented Organizational Diagnostic System">
+    <title>SEAM Assessment – AI-Augmented Organizational Diagnosis</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .landing { min-height: 100vh; position: relative; z-index: 1; }
+
+        .landing-hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            text-align: center;
+            padding: 3rem 1.5rem;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 9999px;
+            font-size: 0.8125rem;
+            color: var(--accent-blue-light);
+            margin-bottom: 2rem;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            max-width: 700px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            line-height: 1.7;
+            margin-bottom: 2.5rem;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .features-grid {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 1.5rem 4rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            padding: 2rem;
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .categories-strip {
+            max-width: 1100px;
+            margin: 0 auto 4rem;
+            padding: 0 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+        }
+
+        .cat-pill {
+            padding: 0.5rem 1.25rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid var(--border-color);
+            background: var(--bg-glass);
+            color: var(--text-secondary);
+            transition: all var(--transition-base);
+        }
+        .cat-pill:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue-light);
+            background: rgba(59, 130, 246, 0.08);
+        }
+
+        .landing-footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.8125rem;
+        }
+    </style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
+<script src="/js/theme.js"></script>
+
+<div class="landing">
+    <!-- Hero -->
+    <div class="landing-hero">
+        <div class="hero-badge">🤖 AI-Augmented Diagnostic Tool</div>
+        <h1 class="hero-title">
+            <span class="text-gradient">SEAM</span> Organizational Assessment
+        </h1>
+        <p class="hero-subtitle">
+            An AI-augmented diagnostic chatbot for the Socio-Economic Approach to Management.
+            Conduct bilingual interviews, automate field note processing, and accelerate organizational diagnosis
+            while preserving SEAM's human-centered foundations.
+        </p>
+        <div class="hero-actions">
+            <a href="/interview.html" class="btn btn-primary btn-lg">Start Interview</a>
+            <a href="/dashboard.html" class="btn btn-secondary btn-lg">Consultant Dashboard</a>
+        </div>
+    </div>
+
+    <!-- SEAM Categories -->
+    <div class="categories-strip">
+        <div class="cat-pill">📊 Strategic Implementation</div>
+        <div class="cat-pill">🏢 Working Conditions</div>
+        <div class="cat-pill">⚙️ Work Organization</div>
+        <div class="cat-pill">⏰ Time Management</div>
+        <div class="cat-pill">🤝 Communication & 3Cs</div>
+        <div class="cat-pill">📚 Integrated Training</div>
+    </div>
+
+    <!-- Features -->
+    <div class="features-grid">
+        <div class="glass-card feature-card">
+            <div class="feature-icon">💬</div>
+            <h3 class="feature-title">Semi-Structured Interviews</h3>
+            <p class="feature-desc">
+                AI-guided diagnostic interviews aligned with the six SEAM dysfunction categories.
+                Neutral, non-directive questioning with dynamic follow-up.
+            </p>
+        </div>
+        <div class="glass-card feature-card">
+            <div class="feature-icon">🌐</div>
+            <h3 class="feature-title">Bilingual Support</h3>
+            <p class="feature-desc">
+                Full Arabic and English support with automatic language detection.
+                Handles code-switching naturally within the same interview.
+            </p>
+        </div>
+        <div class="glass-card feature-card">
+            <div class="feature-icon">🔒</div>
+            <h3 class="feature-title">Anonymization</h3>
+            <p class="feature-desc">
+                NER-based and rule-based redaction of names, organizations, locations,
+                emails, and phone numbers. Verbatim preserved separately.
+            </p>
+        </div>
+        <div class="glass-card feature-card">
+            <div class="feature-icon">🏷️</div>
+            <h3 class="feature-title">Auto-Categorization</h3>
+            <p class="feature-desc">
+                Each field note is classified into primary and secondary SEAM dysfunction
+                categories with thematic tags and confidence scores.
+            </p>
+        </div>
+        <div class="glass-card feature-card">
+            <div class="feature-icon">🔗</div>
+            <h3 class="feature-title">Semantic Clustering</h3>
+            <p class="feature-desc">
+                Multilingual sentence embeddings group similar expressions across interviews,
+                reducing redundancy and identifying recurring dysfunctions.
+            </p>
+        </div>
+        <div class="glass-card feature-card">
+            <div class="feature-icon">📈</div>
+            <h3 class="feature-title">Diagnostic Dashboard</h3>
+            <p class="feature-desc">
+                Consultants review dysfunction distribution, field notes, clusters,
+                and export structured data for synthesis and action planning.
+            </p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="landing-footer">
+        <p>SEAM Assessment Chatbot — AI-Augmented Organizational Diagnosis</p>
+        <p style="margin-top:0.25rem;">Designed by Dr. Karim Shaarani</p>
+    </div>
+</div>
+
+</body>
+</html>
