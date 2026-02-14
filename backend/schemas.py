@@ -103,6 +103,13 @@ class ClusterOut(BaseModel):
     sample_texts: list[str]
 
 
+class ClusterRunResponse(BaseModel):
+    ran_at: datetime | None = None
+    clusters: list[ClusterOut] = []
+    is_stale: bool = False
+    stale_reason: str = ""
+
+
 # ──────────────────────────── Auth ─────────────────────────────────
 
 class LoginRequest(BaseModel):

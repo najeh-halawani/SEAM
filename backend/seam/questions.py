@@ -14,12 +14,12 @@ QUESTION_BANK = {
     "strategic_implementation": {
         "opening": [
             {
-                "en": "Can you describe how the organization's overall strategic direction is communicated to you and your team?",
-                "ar": "هل يمكنك وصف كيفية إيصال التوجه الاستراتيجي العام للمنظمة إليك وإلى فريقك؟"
+                "en": "Do you have a clear idea of what the company's top priorities are right now, and what your team is supposed to focus on?",
+                "ar": "هل لديك فكرة واضحة عن ماهية الأولويات القصوى للشركة حالياً، وما يفترض بفريقك التركيز عليه؟"
             },
             {
-                "en": "In your view, how clear are the organization's priorities and long-term goals?",
-                "ar": "من وجهة نظرك، ما مدى وضوح أولويات المنظمة وأهدافها طويلة المدى؟"
+                "en": "Do you feel that your daily work actually contributes to the company's big goals, or does it feel disconnected?",
+                "ar": "هل تشعر أن عملك اليومي يساهم فعلاً في تحقيق أهداف الشركة الكبرى، أم تشعر أنه منفصل عنها؟"
             },
         ],
         "probing": [
@@ -46,6 +46,14 @@ QUESTION_BANK = {
             {
                 "en": "How are performance goals or KPIs communicated in your area? Do they feel meaningful to your work?",
                 "ar": "كيف يتم إيصال أهداف الأداء أو مؤشراته في مجال عملك؟ هل تشعر أنها ذات معنى لعملك؟"
+            },
+            {
+                "en": "When strategic confusion happens, how much time would you say gets wasted — per week — on rework, waiting for directions, or doing things that end up being scrapped?",
+                "ar": "عندما يحدث ارتباك استراتيجي، كم من الوقت تعتقد أنه يضيع أسبوعياً على إعادة العمل أو انتظار التوجيهات أو القيام بأشياء ينتهي بها الأمر بالإلغاء؟"
+            },
+            {
+                "en": "Have you seen people leave the organization — or think about leaving — because of unclear direction or broken promises? How common is that?",
+                "ar": "هل رأيت أشخاصاً يغادرون المنظمة — أو يفكرون في المغادرة — بسبب عدم وضوح الاتجاه أو الوعود المكسورة؟ ما مدى شيوع ذلك؟"
             },
         ],
         "closing": [
@@ -93,6 +101,18 @@ QUESTION_BANK = {
                 "en": "How do you feel about the recognition and appreciation you receive for your work?",
                 "ar": "كيف تشعر تجاه التقدير الذي تتلقاه على عملك؟"
             },
+            {
+                "en": "When tools break down or resources are missing, how often does that happen — and roughly how much time do you lose each time working around it?",
+                "ar": "عندما تتعطل الأدوات أو تنقص الموارد، كم مرة يحدث ذلك — وتقريباً كم من الوقت تخسره في كل مرة بسبب الحلول البديلة؟"
+            },
+            {
+                "en": "Have poor working conditions ever led to sick days, stress leave, or people calling in absent more often? What patterns have you noticed?",
+                "ar": "هل أدت ظروف العمل السيئة إلى أيام مرضية أو إجازات إجهاد أو غياب الناس بشكل أكثر؟ ما الأنماط التي لاحظتها؟"
+            },
+            {
+                "en": "If there's one thing about your working conditions that frustrates you the most, what is it?",
+                "ar": "إذا كان هناك شيء واحد في ظروف عملك يحبطك أكثر من غيره، فما هو؟"
+            },
         ],
         "closing": [
             {
@@ -138,6 +158,14 @@ QUESTION_BANK = {
             {
                 "en": "Has your role expanded beyond what you were originally hired or assigned to do? How does that affect you?",
                 "ar": "هل توسع دورك إلى ما هو أبعد مما تم تعيينك للقيام به أصلاً؟ كيف يؤثر ذلك عليك؟"
+            },
+            {
+                "en": "When work is disorganized or tasks fall through the cracks, how often does someone have to redo the work? Roughly how much time does that cost per week?",
+                "ar": "عندما يكون العمل غير منظم أو تسقط المهام بين الشقوق، كم مرة يتعين على شخص ما إعادة العمل؟ تقريباً كم من الوقت يكلف ذلك أسبوعياً؟"
+            },
+            {
+                "en": "Are there problems in your area that everyone knows about but nobody talks about openly? What's holding people back from raising them?",
+                "ar": "هل هناك مشاكل في مجالك يعرفها الجميع لكن لا أحد يتحدث عنها علناً؟ ما الذي يمنع الناس من إثارتها؟"
             },
         ],
         "closing": [
@@ -185,6 +213,14 @@ QUESTION_BANK = {
                 "en": "Would you say your daily work is mostly planned and proactive, or mostly responding to urgent issues?",
                 "ar": "هل تقول أن عملك اليومي مخطط ومبادر في الغالب، أم أنه استجابة للمشاكل العاجلة في الغالب؟"
             },
+            {
+                "en": "If you had to estimate, how many hours per week do you spend on things that feel like wasted time — unnecessary meetings, redoing work, waiting on approvals, chasing information?",
+                "ar": "إذا كان عليك التقدير، كم ساعة في الأسبوع تقضيها على أشياء تشعر أنها وقت ضائع — اجتماعات غير ضرورية، إعادة العمل، انتظار الموافقات، البحث عن معلومات؟"
+            },
+            {
+                "en": "What's the biggest time-killer in your work that you wish someone would fix?",
+                "ar": "ما هو أكبر مضيع للوقت في عملك وتتمنى لو أن شخصاً ما يصلحه؟"
+            },
         ],
         "closing": [
             {
@@ -231,6 +267,14 @@ QUESTION_BANK = {
                 "en": "When conflicts arise between colleagues or teams, how are they usually handled?",
                 "ar": "عندما تنشأ خلافات بين الزملاء أو الفرق، كيف يتم التعامل معها عادةً؟"
             },
+            {
+                "en": "When communication breaks down, what's the typical consequence — delays, mistakes, duplicated work? How often would you say this happens?",
+                "ar": "عندما ينهار التواصل، ما النتيجة النموذجية — تأخيرات، أخطاء، عمل مكرر؟ كم مرة تقول إن هذا يحدث؟"
+            },
+            {
+                "en": "Is there something about how things work here that you've been wanting to say but haven't had the chance to?",
+                "ar": "هل هناك شيء حول كيفية سير الأمور هنا كنت تريد قوله لكن لم تتح لك الفرصة؟"
+            },
         ],
         "closing": [
             {
@@ -276,6 +320,14 @@ QUESTION_BANK = {
             {
                 "en": "If a key person in your team were to leave tomorrow, what knowledge or skills would be lost?",
                 "ar": "إذا كان شخص رئيسي في فريقك سيغادر غداً، ما هي المعرفة أو المهارات التي ستفقد؟"
+            },
+            {
+                "en": "Have you seen mistakes or quality problems happen because someone wasn't properly trained? How often does that come up?",
+                "ar": "هل رأيت أخطاء أو مشاكل جودة تحدث لأن شخصاً ما لم يتم تدريبه بشكل صحيح؟ كم مرة يظهر ذلك؟"
+            },
+            {
+                "en": "What's the one skill or knowledge gap in your team that, if fixed, would make the biggest difference?",
+                "ar": "ما هي الفجوة في المهارة أو المعرفة في فريقك التي، إذا تم سدها، ستحدث أكبر فرق؟"
             },
         ],
         "closing": [

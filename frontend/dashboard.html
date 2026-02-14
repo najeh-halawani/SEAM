@@ -44,7 +44,7 @@
             </div>
         </div>
         <div style="display:flex; gap:0.5rem; align-items:center; padding-right: 3.5rem;">
-            <a href="/interview.html" class="btn btn-secondary btn-sm" target="_blank">Open Interview</a>
+            <a href="/interview" class="btn btn-secondary btn-sm" target="_blank">Open Interview</a>
             <button class="btn btn-ghost btn-sm" id="logoutBtn">Logout</button>
         </div>
     </div>
@@ -117,7 +117,13 @@
         <!-- Clusters -->
         <div class="dashboard-section">
             <div class="dashboard-section-header">
-                <h2 class="dashboard-section-title">Dysfunction Clusters</h2>
+                <div>
+                    <h2 class="dashboard-section-title">Dysfunction Clusters</h2>
+                    <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.25rem; flex-wrap:wrap;">
+                        <span id="clusterTimestamp" style="font-size:0.75rem; color:var(--text-muted);"></span>
+                        <span id="clusterStaleWarning" style="display:none; font-size:0.75rem; color:var(--accent-amber); background:rgba(245,158,11,0.1); padding:0.15rem 0.5rem; border-radius:var(--radius-full);"></span>
+                    </div>
+                </div>
                 <button class="btn btn-secondary btn-sm" id="runClusterBtn">Run Clustering</button>
             </div>
             <div class="cluster-grid" id="clustersGrid">

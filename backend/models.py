@@ -70,3 +70,13 @@ class FieldNote(Base):
     created_at = Column(DateTime, default=_utcnow)
 
     session = relationship("InterviewSession", back_populates="field_notes")
+
+
+class ClusterRun(Base):
+    """Persisted result of a clustering run."""
+    __tablename__ = "cluster_runs"
+
+    id = Column(String(36), primary_key=True, default=_new_id)
+    ran_at = Column(DateTime, default=_utcnow, nullable=False)
+    session_count = Column(Integer, default=0)  # sessions at time of run
+    result = Column(JSON, nullable=False)       # full cluster output

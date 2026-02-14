@@ -110,12 +110,20 @@ class SeamAPI {
         return this._request('GET', `/dashboard/session/${sessionId}`, null, true);
     }
 
+    async deleteSession(sessionId) {
+        return this._request('DELETE', `/dashboard/session/${sessionId}`, null, true);
+    }
+
     async getAnalytics() {
         return this._request('GET', '/dashboard/analytics', null, true);
     }
 
     async getClusters() {
         return this._request('GET', '/dashboard/clusters', null, true);
+    }
+
+    async runClusters() {
+        return this._request('POST', '/dashboard/clusters', null, true);
     }
 
     async exportSession(sessionId, format = 'json') {

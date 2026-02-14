@@ -7,6 +7,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from backend.config import settings
 from backend.database import init_db
@@ -57,6 +58,16 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(interview.router)
 app.include_router(dashboard.router)
+
+# ── Static HTML Routes (Clean URLs) ───────────────────────────────────
+
+@app.get("/interview")
+async def get_interview_page():
+    return FileResponse(frontend_dir / "interview.html")
+
+@app.get("/dashboard")
+async def get_dashboard_page():
+    return FileResponse(frontend_dir / "dashboard.html")
 
 # ── Static Files (Frontend) ──────────────────────────────────────────
 

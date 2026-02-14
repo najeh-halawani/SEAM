@@ -47,7 +47,7 @@ def generate_embeddings(texts: list[str]) -> list[list[float]]:
 def cluster_field_notes(
     texts: list[str],
     embeddings: list[list[float]] | None = None,
-    distance_threshold: float = 0.5,
+    distance_threshold: float = 0.75,
 ) -> dict:
     """Cluster field notes by semantic similarity.
 

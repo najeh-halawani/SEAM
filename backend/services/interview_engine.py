@@ -53,7 +53,20 @@ def build_greeting(language: str) -> str:
         return GREETING_EN.format(first_question=first_q["en"])
 
 
-def build_category_context(category_index: int, language: str = "en", role_level: str = "operational") -> str:
+def _format_questions(questions: list[dict], language: str = "en") -> str:
+    """Format a list of question dicts into a numbered string."""
+    lang_key = "ar" if language == "ar" else "en"
+    lines = []
+    for i, q in enumerate(questions, 1):
+        lines.append(f"  {i}. {q[lang_key]}")
+    return "\n".join(lines)
+
+
+def build_category_context(
+    category_index: int,
+    language: str = "en",
+    role_level: str = "operational",
+) -> str:
     """Build the category context message for GPT.
 
     Args:
@@ -71,16 +84,39 @@ def build_category_context(category_index: int, language: str = "en", role_level
     cat_info = next(c for c in SEAM_CATEGORIES if c["key"] == cat_key)
     questions = QUESTION_BANK[cat_key]
 
-    # Pick the first opening question in the appropriate language
-    opening_q = questions["opening"][0]
-    opening_text = opening_q["ar"] if language == "ar" else opening_q["en"]
+    # Format all question pools for the LLM
+    opening_qs = _format_questions(questions["opening"], language)
+    probing_qs = _format_questions(questions["probing"], language)
+    closing_qs = _format_questions(questions["closing"], language)
+
+    # Build next category preview
+    next_idx = category_index + 1
+    if next_idx < len(CATEGORY_ORDER):
+        next_key = CATEGORY_ORDER[next_idx]
+        next_info = next(c for c in SEAM_CATEGORIES if c["key"] == next_key)
+        next_questions = QUESTION_BANK[next_key]
+        next_opening = next_questions["opening"][0]
+        next_opening_text = next_opening["ar"] if language == "ar" else next_opening["en"]
+        next_category_info = (
+            f"The NEXT category is: **{next_info['name_en']}** ({next_info['name_ar']})\n"
+            f"Description: {next_info['description_ar'] if language == 'ar' else next_info['description_en']}\n"
+            f'Suggested opening question for the next category: "{next_opening_text}"'
+        )
+    else:
+        next_category_info = (
+            "This is the LAST category. After gathering enough insights, "
+            "wrap up warmly and include [ADVANCE_CATEGORY] to complete the interview."
+        )
 
     return CATEGORY_CONTEXT_TEMPLATE.format(
         index=category_index + 1,
         name_en=cat_info["name_en"],
         name_ar=cat_info["name_ar"],
         description=cat_info["description_ar"] if language == "ar" else cat_info["description_en"],
-        opening_question=opening_text,
+        opening_questions=opening_qs,
+        probing_questions=probing_qs,
+        closing_questions=closing_qs,
+        next_category_info=next_category_info,
         role_level=role_level,
     )
 
@@ -124,6 +160,9 @@ async def generate_reply(
     }
     min_depth, max_depth = depth_map.get(role_level, (3, 5))
 
+    # Count actual exchanges (user messages) in the conversation so far
+    user_message_count = sum(1 for m in conversation_history if m["role"] == "user")
+
     # Build message list for GPT
     messages = [
         {"role": "system", "content": INTERVIEW_SYSTEM_PROMPT},
@@ -131,67 +170,100 @@ async def generate_reply(
         {
             "role": "system",
             "content": (
-                f"IMPORTANT: For this participant's role level ({role_level}), you should have "
-                f"{min_depth}–{max_depth} meaningful exchanges per category before considering advancement. "
-                "A 'meaningful exchange' is one where the participant shares a concrete experience, "
-                "opinion, or specific example — not just a brief acknowledgment. "
-                "When the participant has shared enough rich insights (meeting the depth threshold) "
-                "OR explicitly says they have nothing more to add, include the EXACT marker "
-                "[ADVANCE_CATEGORY] at the very end of your message (after your visible response). "
-                "This marker will NOT be shown to the participant. Do NOT include this marker "
-                "if the participant is still actively sharing valuable insights."
+                f"DEPTH STATUS: This is exchange #{user_message_count} overall. "
+                f"For this participant's role level ({role_level}), aim for "
+                f"{min_depth}–{max_depth} exchanges per category. "
+                f"Count ALL exchanges — even short answers count as valid exchanges. "
+                f"When the participant's answers are consistently brief, that signals "
+                f"they've shared what they comfortably can on this topic — respect that "
+                f"and advance rather than pushing for more detail. "
+                f"When you've reached the depth threshold OR the participant clearly "
+                f"has nothing more to add, include the EXACT marker [ADVANCE_CATEGORY] "
+                f"at the very end of your message. "
+                f"REMEMBER: Your transition message MUST include an opening question "
+                f"for the next category — never leave the participant with nothing to respond to."
             ),
         },
     ]
     messages.extend(conversation_history)
 
-    try:
-        client = _get_client()
-        response = await client.chat.completions.create(
-            model=settings.llm_model,
-            messages=messages,
-            temperature=0.75,
-            max_tokens=600,
-        )
+    # Retry loop for empty responses
+    for attempt in range(2):
+        try:
+            client = _get_client()
+            response = await client.chat.completions.create(
+                model=settings.llm_model,
+                messages=messages,
+                temperature=0.75,
+                max_tokens=600,
+            )
 
-        reply_text = response.choices[0].message.content or ""
-        reply_text = reply_text.strip()
+            reply_text = response.choices[0].message.content or ""
+            reply_text = reply_text.strip()
 
-        # Check for category advancement marker
-        should_advance = "[ADVANCE_CATEGORY]" in reply_text
-        # Remove the marker from the visible reply
-        reply_text = reply_text.replace("[ADVANCE_CATEGORY]", "").strip()
+            # Check for category advancement marker
+            should_advance = "[ADVANCE_CATEGORY]" in reply_text
+            # Remove the marker from the visible reply
+            reply_text = reply_text.replace("[ADVANCE_CATEGORY]", "").strip()
 
-        # If reply is empty after stripping marker, provide a fallback
-        if not reply_text:
-            if should_advance:
-                # LLM sent only the marker — provide a transition message
+            # Enforce em-dash removal (user dislikes them)
+            reply_text = reply_text.replace("—", ", ")
+
+            if reply_text:
+                break
+            
+            if attempt == 0:
+                logger.warning("Empty response from interview engine, retrying...")
+                
+        except Exception as e:
+            logger.error(f"Interview engine error (attempt {attempt}): {e}")
+            if attempt == 1:
+                fallback = (
+                    "أعتذر، حدث خطأ تقني. هل يمكنك إعادة ما قلته؟"
+                    if language == "ar"
+                    else "I apologize, there was a technical issue. Could you please repeat what you said?"
+                )
+                return {
+                    "reply": fallback,
+                    "should_advance": False,
+                    "is_complete": False,
+                }
+
+    # If reply is still empty after stripping marker, provide a fallback
+    if not reply_text:
+        if should_advance:
+            # LLM sent only the marker — provide a transition with next question
+            next_idx = category_index + 1
+            if next_idx < len(CATEGORY_ORDER):
+                next_key = CATEGORY_ORDER[next_idx]
+                next_questions = QUESTION_BANK[next_key]
+                next_opening = next_questions["opening"][0]
                 if language == "ar":
-                    reply_text = "شكراً لمشاركتك القيّمة في هذا المحور. دعنا ننتقل إلى الموضوع التالي."
+                    reply_text = (
+                        f"شكراً لمشاركتك. "
+                        f"دعنا ننتقل إلى موضوع مختلف — "
+                        f"{next_opening['ar']}"
+                    )
                 else:
-                    reply_text = "Thank you for sharing those valuable insights. Let's move on to explore the next area together."
+                    reply_text = (
+                        f"Thanks for that. "
+                        f"Let's move on to something else. "
+                        f"{next_opening['en']}"
+                    )
             else:
-                # General empty reply fallback
                 if language == "ar":
-                    reply_text = "شكراً لمشاركتك. هل يمكنك التوسع أكثر في ذلك؟"
+                    reply_text = "شكراً لك."
                 else:
-                    reply_text = "Thank you for sharing that. Could you tell me a bit more about your experience with this?"
+                    reply_text = "Thanks for your time."
+        else:
+            # General empty reply fallback
+            if language == "ar":
+                reply_text = ".."
+            else:
+                reply_text = "Could you say a bit more?"
 
-        return {
-            "reply": reply_text,
-            "should_advance": should_advance,
-            "is_complete": False,
-        }
-
-    except Exception as e:
-        logger.error(f"Interview engine error: {e}")
-        fallback = (
-            "أعتذر، حدث خطأ تقني. هل يمكنك إعادة ما قلته؟"
-            if language == "ar"
-            else "I apologize, there was a technical issue. Could you please repeat what you said?"
-        )
-        return {
-            "reply": fallback,
-            "should_advance": False,
-            "is_complete": False,
-        }
+    return {
+        "reply": reply_text,
+        "should_advance": should_advance,
+        "is_complete": False,
+    }

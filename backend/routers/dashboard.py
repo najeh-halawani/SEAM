@@ -4,6 +4,7 @@ import csv
 import io
 import json
 import logging
+from datetime import datetime, timezone
 from collections import Counter
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
@@ -12,12 +13,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from backend.database import get_db
-from backend.models import InterviewSession, ChatMessage, FieldNote
+from backend.models import InterviewSession, ChatMessage, FieldNote, ClusterRun
 from backend.routers.auth import verify_token
 from backend.schemas import (
     SessionSummary, SessionDetail, FieldNoteOut,
     AnalyticsResponse, CategoryStat, ClusterOut,
-    SummaryResponse,
+    ClusterRunResponse, SummaryResponse,
 )
 from backend.services.clusterer import cluster_field_notes
 from backend.services.summarizer import generate_session_summary
@@ -70,6 +71,25 @@ async def list_sessions(
         ))
 
     return summaries
+
+
+@router.delete("/session/{session_id}")
+async def delete_session(
+    session_id: str,
+    _user: str = Depends(verify_token),
+    db: AsyncSession = Depends(get_db),
+):
+    """Delete a session and all its messages and field notes."""
+    result = await db.execute(
+        select(InterviewSession).where(InterviewSession.id == session_id)
+    )
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    await db.delete(session)  # cascade handles messages + field notes
+    await db.commit()
+    return {"status": "deleted", "session_id": session_id}
 
 
 @router.get("/session/{session_id}", response_model=SessionDetail)
@@ -171,19 +191,52 @@ async def get_analytics(
     )
 
 
-@router.get("/clusters", response_model=list[ClusterOut])
+@router.get("/clusters", response_model=ClusterRunResponse)
 async def get_clusters(
     _user: str = Depends(verify_token),
     db: AsyncSession = Depends(get_db),
 ):
-    """Run semantic clustering on all field notes and return results."""
+    """Return the most recent saved clustering result with staleness check."""
+    result = await db.execute(
+        select(ClusterRun).order_by(ClusterRun.ran_at.desc()).limit(1)
+    )
+    last_run = result.scalar_one_or_none()
+
+    if not last_run:
+        return ClusterRunResponse()
+
+    # Check staleness — compare session count at run time vs now
+    current_count = await db.execute(select(func.count(InterviewSession.id)))
+    current_total = current_count.scalar() or 0
+    is_stale = current_total != last_run.session_count
+    diff = current_total - last_run.session_count
+    stale_reason = ""
+    if is_stale and diff > 0:
+        stale_reason = f"{diff} new session(s) since last run"
+    elif is_stale and diff < 0:
+        stale_reason = f"{abs(diff)} session(s) deleted since last run"
+
+    return ClusterRunResponse(
+        ran_at=last_run.ran_at,
+        clusters=last_run.result,
+        is_stale=is_stale,
+        stale_reason=stale_reason,
+    )
+
+
+@router.post("/clusters", response_model=ClusterRunResponse)
+async def run_clusters(
+    _user: str = Depends(verify_token),
+    db: AsyncSession = Depends(get_db),
+):
+    """Run semantic clustering on all field notes, save and return results."""
     result = await db.execute(
         select(FieldNote).order_by(FieldNote.created_at)
     )
     notes = result.scalars().all()
 
     if not notes:
-        return []
+        return ClusterRunResponse()
 
     texts = [n.anonymized_text for n in notes]
     embeddings = [n.embedding for n in notes if n.embedding]
@@ -197,18 +250,15 @@ async def get_clusters(
     # Update cluster assignments in DB
     for i, note in enumerate(notes):
         note.cluster_id = cluster_result["cluster_labels"][i]
-    await db.commit()
 
-    # Build response — only include clusters with a valid SEAM category
+    # Build response clusters — only include clusters with a valid SEAM category
     clusters = []
     for cid, cdata in cluster_result["clusters"].items():
-        # Find most common category in cluster
         cluster_notes = [n for n in notes if n.cluster_id == cid]
         categories = [n.primary_category for n in cluster_notes if n.primary_category]
         most_common_cat = Counter(categories).most_common(1)
         cat_name = CATEGORY_NAMES_EN.get(most_common_cat[0][0], most_common_cat[0][0]) if most_common_cat else None
 
-        # Skip clusters without a valid category
         if not cat_name:
             continue
 
@@ -220,7 +270,26 @@ async def get_clusters(
             sample_texts=cdata["texts"][:5],
         ))
 
-    return sorted(clusters, key=lambda c: c.size, reverse=True)
+    clusters = sorted(clusters, key=lambda c: c.size, reverse=True)
+
+    # Persist the run
+    session_count_q = await db.execute(select(func.count(InterviewSession.id)))
+    session_count = session_count_q.scalar() or 0
+
+    run = ClusterRun(
+        ran_at=datetime.now(timezone.utc),
+        session_count=session_count,
+        result=[c.model_dump() for c in clusters],
+    )
+    db.add(run)
+    await db.commit()
+
+    return ClusterRunResponse(
+        ran_at=run.ran_at,
+        clusters=clusters,
+        is_stale=False,
+        stale_reason="",
+    )
 
 
 @router.get("/export/{session_id}")

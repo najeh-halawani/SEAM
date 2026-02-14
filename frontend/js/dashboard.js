@@ -19,6 +19,8 @@
     const modalContent   = document.getElementById('modalContent');
     const modalTitle     = document.getElementById('modalTitle');
     const modalClose     = document.getElementById('modalClose');
+    const clusterTimestamp   = document.getElementById('clusterTimestamp');
+    const clusterStaleWarning = document.getElementById('clusterStaleWarning');
 
     // Category color mapping
     const CATEGORY_CSS = {
@@ -90,6 +92,7 @@
         await Promise.all([
             loadAnalytics(),
             loadSessions(),
+            loadSavedClusters(),
         ]);
     }
 
@@ -193,6 +196,7 @@
                             <button class="btn btn-ghost btn-sm" onclick="viewSession('${s.id}')">View</button>
                             <button class="btn btn-ghost btn-sm" onclick="exportSession('${s.id}', 'json')">JSON</button>
                             <button class="btn btn-ghost btn-sm" onclick="exportSession('${s.id}', 'csv')">CSV</button>
+                            <button class="btn btn-ghost btn-sm" onclick="deleteSession('${s.id}', '${s.participant_code}')" style="color:var(--accent-rose);" title="Delete session">🗑️</button>
                         </div>
                     </td>
                 </tr>
@@ -203,6 +207,25 @@
     filterStatus.addEventListener('change', loadSessions);
     refreshBtn.addEventListener('click', loadAll);
 
+    // ── Delete Session ───────────────────────────────────
+
+    window.deleteSession = async function (sessionId, code) {
+        if (!confirm(`Are you sure you want to delete session "${code}"?\n\nThis will permanently remove all messages, field notes, and data for this session. This cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            await api.deleteSession(sessionId);
+            showToast(`Session "${code}" deleted`);
+            // Close the modal if it's showing this session
+            modalOverlay.classList.remove('active');
+            loadAll();
+        } catch (err) {
+            showToast('Failed to delete session', 'error');
+            console.error('Delete error:', err);
+        }
+    };
+
     // ── Session Detail Modal ─────────────────────────────
 
     window.viewSession = async function (sessionId) {
@@ -211,7 +234,14 @@
 
         try {
             const detail = await api.getSessionDetail(sessionId);
-            modalTitle.textContent = `Session: ${detail.session.participant_code}`;
+            modalTitle.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                    <span>Session: ${detail.session.participant_code}</span>
+                    <button class="btn btn-ghost btn-sm" onclick="deleteSession('${sessionId}', '${detail.session.participant_code}')" style="color:var(--accent-rose);" title="Delete session">
+                        🗑️ Delete
+                    </button>
+                </div>
+            `;
 
             // ── Summary Section ─────────────────────
             let summaryHtml = '';
@@ -357,41 +387,84 @@
 
     // ── Clusters ─────────────────────────────────────────
 
+    function renderClusterStatus(data) {
+        // Update timestamp
+        if (data.ran_at) {
+            const date = new Date(data.ran_at).toLocaleString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+            clusterTimestamp.textContent = `Last run: ${date}`;
+        } else {
+            clusterTimestamp.textContent = '';
+        }
+
+        // Update staleness warning
+        if (data.is_stale && data.stale_reason) {
+            clusterStaleWarning.style.display = 'inline-flex';
+            clusterStaleWarning.textContent = `⚠️ ${data.stale_reason} — re-run recommended`;
+        } else {
+            clusterStaleWarning.style.display = 'none';
+            clusterStaleWarning.textContent = '';
+        }
+    }
+
+    function renderClusterGrid(clusters) {
+        const grid = document.getElementById('clustersGrid');
+
+        if (!clusters || clusters.length === 0) {
+            grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-icon">🔍</div><p class="empty-state-text">No clusters yet. Run clustering after completing some interviews.</p></div>';
+            return;
+        }
+
+        grid.innerHTML = clusters.map(c => `
+            <div class="glass-card cluster-card">
+                <div class="cluster-header">
+                    <div>
+                        <span class="cluster-size">${c.size}</span>
+                        <span style="color:var(--text-muted); font-size:0.8rem;"> notes</span>
+                    </div>
+                    ${c.category ? `<span class="badge ${BADGE_CSS[c.category] || 'badge-blue'}">${c.category}</span>` : ''}
+                </div>
+                <div class="cluster-representative">"${c.representative_text}"</div>
+                ${c.sample_texts.length > 1 ? `
+                    <div class="cluster-samples">
+                        ${c.sample_texts.slice(1, 4).map(t => `
+                            <div class="cluster-sample">"${t}"</div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+    }
+
+    async function loadSavedClusters() {
+        try {
+            const data = await api.getClusters();
+            renderClusterStatus(data);
+            renderClusterGrid(data.clusters);
+        } catch (err) {
+            console.error('Clusters load error:', err);
+        }
+    }
+
     runClusterBtn.addEventListener('click', async () => {
         const grid = document.getElementById('clustersGrid');
         grid.innerHTML = '<div class="loading-center" style="grid-column:1/-1;"><div class="spinner"></div></div>';
         runClusterBtn.disabled = true;
+        runClusterBtn.textContent = '⏳ Running...';
 
         try {
-            const clusters = await api.getClusters();
-            if (clusters.length === 0) {
-                grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><p class="empty-state-text">Not enough data for clustering. Complete more interviews first.</p></div>';
-                return;
-            }
-
-            grid.innerHTML = clusters.map(c => `
-                <div class="glass-card cluster-card">
-                    <div class="cluster-header">
-                        <div>
-                            <span class="cluster-size">${c.size}</span>
-                            <span style="color:var(--text-muted); font-size:0.8rem;"> notes</span>
-                        </div>
-                        ${c.category ? `<span class="badge ${BADGE_CSS[c.category] || 'badge-blue'}">${c.category}</span>` : ''}
-                    </div>
-                    <div class="cluster-representative">"${c.representative_text}"</div>
-                    ${c.sample_texts.length > 1 ? `
-                        <div class="cluster-samples">
-                            ${c.sample_texts.slice(1, 4).map(t => `
-                                <div class="cluster-sample">"${t}"</div>
-                            `).join('')}
-                        </div>
-                    ` : ''}
-                </div>
-            `).join('');
+            const data = await api.runClusters();
+            renderClusterStatus(data);
+            renderClusterGrid(data.clusters);
+            showToast('Clustering complete!');
         } catch (err) {
-            grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><p style="color:var(--accent-rose);">Failed to load clusters.</p></div>';
+            grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><p style="color:var(--accent-rose);">Failed to run clustering.</p></div>';
+            showToast('Clustering failed', 'error');
         } finally {
             runClusterBtn.disabled = false;
+            runClusterBtn.textContent = 'Run Clustering';
         }
     });
 
